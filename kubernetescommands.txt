@@ -1,0 +1,1 @@
+winpty kubectl exec -it  spring-boot-k8s-bccc4c557-s48q7 -- bash
