@@ -1,1 +1,97 @@
 winpty kubectl exec -it  spring-boot-k8s-bccc4c557-s48q7 -- bash
+
+kubectl get pods --v=6
+cat /home/ubuntu/.kube/config
+
+grep "client-cert" ~/.kube/config | \
+  sed 's/\(.*client-certificate-data: \)\(.*\)/\2/' | \
+  base64 --decode \
+  > cert.pem
+openssl x509 -in cert.pem -text -noout
+
+cp .kube/config .kube/config.orig
+sed -i '15,$d' .kube/config
+kubectl get pods --v=6
+
+kubectl get pods
+kubectl config --help
+
+kubectl config get-contexts
+
+grep "client-cert" ~/.kube/config | \
+  sed 's/\(.*client-certificate-data: \)\(.*\)/\2/' | \
+  base64 --decode \
+  > cert.pem
+openssl x509 -in cert.pem -text -noout
+
+cp .kube/config .kube/config.orig
+sed -i '15,$d' .kube/config
+kubectl get pods --v=6
+
+kubectl get serviceaccounts default -o yaml
+
+kubectl get serviceaccounts default -o yaml
+
+kubectl get -n kube-system role kube-proxy -o yaml
+
+kubectl get roles --all-namespaces
+
+kubectl get clusterroles
+kubectl get clusterrole cluster-admin -o yaml
+
+kubectl get clusterrolebinding cluster-admin -o yaml
+
+kubectl auth can-i list nodes
+
+kubectl exec -n kube-system kube-apiserver-ip-10-0-0-100.us-west-2.compute.internal -- kube-apiserver -h | grep "enable-admission-plugins strings"
+
+ssh 10.0.0.100 -oStrictHostKeyChecking=no
+
+ps -ef | grep kube-apiserver | grep enable-admission-plugins
+
+# Create namespace
+kubectl create namespace strategies
+# Set namespace as the default for the current context
+kubectl config set-context $(kubectl config current-context) --namespace=strategies
+
+cat << EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web
+    version: old
+  name: app
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: web
+      version: old
+  strategy:
+    type: RollingUpdate # Default value is RollingUpdate, Recreate also supported
+  template:
+    metadata:
+      labels:
+        app: web
+        version: old
+    spec:
+      containers:
+      - image: nginx:1.21.3-alpine
+        name: nginx
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          failureThreshold: 3 
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          periodSeconds: 5
+          successThreshold: 2
+          timeoutSeconds: 10
+EOF
+
+
+
+kubectl get service -w
